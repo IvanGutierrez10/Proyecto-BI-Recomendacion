@@ -118,7 +118,7 @@ class Recommender:
             if set(premise).issubset(cart_set):
                 for item in conclusion:
                     if item not in cart_set and item not in recommendations:
-                        if len(recommendations) > max_recommendations:
+                        if len(recommendations) < max_recommendations:
                             recommendations.append(item)
                             end_time = time.time()
                             print(f"Recommendation Runtime: {end_time - start_time} seconds")
