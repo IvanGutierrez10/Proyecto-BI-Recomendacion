@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import itertools
+import time
+from collections import defaultdict
 
 
 class Recommender:
@@ -106,15 +108,22 @@ class Recommender:
             :param max_recommendations: maximum number of items that may be recommended
             :return: list of at most `max_recommendations` items to be recommended
         """
+        start_time = time.time()
+
         recommendations = []
         cart_set = set(cart)
 
+        # Find applicable rules
         for premise, conclusion, support, confidence in self.rules:
             if set(premise).issubset(cart_set):
                 for item in conclusion:
                     if item not in cart_set and item not in recommendations:
                         recommendations.append(item)
                         if len(recommendations) >= max_recommendations:
+                            end_time = time.time()
+                            print(f"Recommendation Runtime: {end_time - start_time} seconds")
                             return recommendations
 
+        end_time = time.time()
+        print(f"Recommendation Runtime: {end_time - start_time} seconds")
         return recommendations  # always recommends the same item (requires that there are at least 43 items)
