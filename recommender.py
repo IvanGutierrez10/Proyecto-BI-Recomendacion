@@ -6,6 +6,11 @@ class Recommender:
         This is the class to make recommendations.
         The class must not require any mandatory arguments for initialization.
     """
+    def __init__(self):
+        self.prices = []
+        self.database = []
+        self.rules = []
+
     def eclat_recursive(self, P, minsup, F):
         for Xa, t_Xa in P.items():
             F.append((sorted(list(Xa)), len(t_Xa)))
@@ -28,6 +33,24 @@ class Recommender:
 
         self.eclat_recursive(P, minsup, F)
         return F
+    
+    def getStrongRulesFromFrequentSets(self, fsets, minconf):
+        R = []
+        for Z, supZ in fsets:
+            if len(Z) >= 2:
+                A = [set(x) for x in itertools.chain(*[itertools.combinations(Z, i) for i in range(1, len(Z))])]
+                while A:
+                    X = max(A, key=len)
+                    A = [a for a in A if a != X]
+                    X = set(X)
+                    Y = set(Z) - X
+                    supX = next(sup for items, sup in fsets if set(items) == X)
+                    c = supZ / supX
+                    if c >= minconf:
+                        R.append((sorted(list(X)), sorted(list(Y)), supZ, c))
+                    else:
+                        A = [a for a in A if not X.issubset(set(a))]
+        return R
     
     def train(self, prices, database) -> None:
         """
@@ -58,4 +81,15 @@ class Recommender:
             :param max_recommendations: maximum number of items that may be recommended
             :return: list of at most `max_recommendations` items to be recommended
         """
-        return [42]  # always recommends the same item (requires that there are at least 43 items)
+        recommendations = []
+        cart_set = set(cart)
+
+        for premise, conclusion, support, confidence in self.rules:
+            if set(premise).issubset(cart_set):
+                for item in conclusion:
+                    if item not in cart_set and item not in recommendations:
+                        recommendations.append(item)
+                        if len(recommendations) >= max_recommendations:
+                            return recommendations
+
+        return recommendations  # always recommends the same item (requires that there are at least 43 items)
