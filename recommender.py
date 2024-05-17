@@ -83,8 +83,8 @@ class Recommender:
         self.prices = prices
         self.database = database
 
-        minsup = 16  # Example value for minimum support
-        minconf = 0.4  # Example value for minimum confidence
+        minsup = 20  # Example value for minimum support
+        minconf = 0.5  # Example value for minimum confidence
 
         # Find frequent itemsets
         frequent_itemsets = self.eclat(database, minsup)
