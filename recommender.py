@@ -109,7 +109,7 @@ class Recommender:
             :return: list of at most `max_recommendations` items to be recommended
         """
         start_time = time.time()
-
+        
         recommendations = []
         cart_set = set(cart)
 
@@ -118,11 +118,13 @@ class Recommender:
             if set(premise).issubset(cart_set):
                 for item in conclusion:
                     if item not in cart_set and item not in recommendations:
-                        if len(recommendations) < max_recommendations:
-                            recommendations.append(item)
-                            #end_time = time.time()
-                            #print(f"Recommendation Runtime: {end_time - start_time} seconds")
-                            #return recommendations
+                        recommendations.append(item)
+                        if len(recommendations) >= max_recommendations:
+                            break
+
+        # Sort recommendations by item prices in descending order
+        recommendations.sort(key=lambda x: self.prices[int(x)], reverse=True)
+        recommendations = recommendations[:max_recommendations]
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
