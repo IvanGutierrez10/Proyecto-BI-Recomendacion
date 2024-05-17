@@ -83,8 +83,8 @@ class Recommender:
         self.prices = prices
         self.database = database
 
-        minsup = 14  # Example value for minimum support
-        minconf = 0.6  # Example value for minimum confidence
+        minsup = 13  # Example value for minimum support
+        minconf = 0.4  # Example value for minimum confidence
 
         # Find frequent itemsets
         frequent_itemsets = self.eclat(database, minsup)
@@ -120,9 +120,9 @@ class Recommender:
                     if item not in cart_set and item not in recommendations:
                         if len(recommendations) < max_recommendations:
                             recommendations.append(item)
-                            end_time = time.time()
-                            print(f"Recommendation Runtime: {end_time - start_time} seconds")
-                            return recommendations
+                            #end_time = time.time()
+                            #print(f"Recommendation Runtime: {end_time - start_time} seconds")
+                            #return recommendations
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
