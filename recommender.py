@@ -18,7 +18,7 @@ class Recommender:
             F.append((sorted(list(Xa)), len(t_Xa)))
             Pa = {}
             for Xb, t_Xb in P.items():
-                if list(Xb) > list(Xa):
+                if list(Xb) > list(Xa):  # Ensure correct ordering for comparison
                     Xab = Xa | Xb
                     t_Xab = t_Xa & t_Xb
                     if len(t_Xab) >= minsup:
@@ -27,13 +27,28 @@ class Recommender:
                 self.eclat_recursive(Pa, minsup, F)
 
     def eclat(self, db, minsup):
+        # Initialize the variables
         F = []
-        P = {frozenset([item]): set() for transaction in db for item in transaction}
+        P = defaultdict(set)
+
+        # Count item occurrences to filter out non-frequent items
+        item_counts = defaultdict(int)
+        for transaction in db:
+            for item in transaction:
+                item_counts[item] += 1
+
+        # Only consider frequent items
         for i, transaction in enumerate(db):
             for item in transaction:
-                P[frozenset([item])].add(i)
+                if item_counts[item] >= minsup:
+                    P[frozenset([item])].add(i)
 
+        # Start the recursive Eclat algorithm
+        start_time = time.time()
         self.eclat_recursive(P, minsup, F)
+        end_time = time.time()
+
+        print(f"Eclat Runtime: {end_time - start_time} seconds")
         return F
     
     def getStrongRulesFromFrequentSets(self, fsets, minconf):
@@ -61,17 +76,25 @@ class Recommender:
             :param database: a list of lists of item ids that have been purchased together. Every entry corresponds to one transaction
             :return: the object should return itself here (this is actually important!)
         """
+        start_time = time.time()
+
         self.prices = prices
         self.database = database
 
-        minsup = 3
-        minconf = 0.7
+        minsup = 20  # Example value for minimum support
+        minconf = 0.5  # Example value for minimum confidence
 
-        frequent_itemsets = self.eclat(self.database, minsup)
+        # Find frequent itemsets
+        frequent_itemsets = self.eclat(database, minsup)
 
+        # Convert frequent itemsets to the required format for getStrongRulesFromFrequentSets
         fsets = [(set(items), sup) for items, sup in frequent_itemsets]
 
+        # Find strong rules
         self.rules = self.getStrongRulesFromFrequentSets(fsets, minconf)
+
+        end_time = time.time()
+        print(f"Training Runtime: {end_time - start_time} seconds")
 
         return self
 
