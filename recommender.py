@@ -1,4 +1,3 @@
-import pandas as pd
 import itertools
 import time
 from collections import defaultdict
@@ -59,23 +58,16 @@ class Recommender:
             if len(Z) >= 2:
                 A = [set(x) for x in itertools.chain(*[itertools.combinations(Z, i) for i in range(1, len(Z))])]
                 while A:
-                    X = max(A, key=len)
-                    A = [a for a in A if a != X]
-                    X = set(X)
-                    Y = set(Z) - X
-                    supX = next(sup for items, sup in fsets if set(items) == X)
-                    supY = next(sup for items, sup in fsets if set(items) == Y)
-                    c = supZ / supX
-                    if c >= minconf:
-                        # Calculate lift
-                        lift = c / (supY / self.num_transactions)
-                        # Calculate leverage
-                        leverage = (supZ / self.num_transactions) - ((supX / self.num_transactions) * (supY / self.num_transactions))
-                        # Calculate Jaccard
-                        jaccard = (supZ / self.num_transactions) / ((supX / self.num_transactions) + (supY / self.num_transactions) - (supZ / self.num_transactions))
-                        R.append((sorted(list(X)), sorted(list(Y)), supZ, c, lift, leverage, jaccard))
-                    else:
-                        A = [a for a in A if not X.issubset(set(a))]
+                    A1 = A.pop(0)
+                    A2 = set(Z) - A1
+                    supA1 = [fs for fs in fsets if fs[0] == A1][0][1]
+                    conf = supZ / supA1
+                    if conf >= minconf:
+                        supA2 = [fs for fs in fsets if fs[0] == A2][0][1]
+                        lift = conf / (supA2 / self.num_transacciones)
+                        leverage = supZ / self.num_transacciones - (supA1 / len(self.num_transacciones)) * (supA2 / self.num_transacciones)
+                        jaccard = supZ / (supA1 + supA2 - supZ)
+                        R.append((A1, A2, supZ, conf, lift, leverage, jaccard))
         return R
     
     def train(self, prices, database):
@@ -110,7 +102,7 @@ class Recommender:
         :return: list of at most `max_recommendations` items to be recommended
         """
         start_time = time.time()
-        
+
         recommendations = []
         cart_set = set(cart)
 
@@ -123,8 +115,8 @@ class Recommender:
                         if len(recommendations) >= max_recommendations:
                             break
 
-        # Sort recommendations by confidence, lift, leverage, and Jaccard in descending order
-        recommendations.sort(key=lambda x: (x[1], x[2], x[3], x[4], x[5]), reverse=True)
+        # Sort recommendations primarily by price and then by a combination of metrics in descending order
+        recommendations.sort(key=lambda x: (x[1], x[2]*0.4 + x[3]*0.3 + x[4]*0.2 + x[5]*0.1), reverse=True)
         recommendations = [rec[0] for rec in recommendations[:max_recommendations]]
 
         end_time = time.time()
