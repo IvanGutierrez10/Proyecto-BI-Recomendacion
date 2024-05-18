@@ -93,7 +93,7 @@ class Recommender:
         self.num_transactions = len(database)
 
         minsup = 20  # Example value for minimum support
-        minconf = 0.35  # Example value for minimum confidence
+        minconf = 0.3  # Example value for minimum confidence
 
         # Find frequent itemsets
         frequent_itemsets = self.eclat(database, minsup)
@@ -126,16 +126,13 @@ class Recommender:
             if set(premise).issubset(cart_set):
                 for item in conclusion:
                     if item not in cart_set and item not in [rec[0] for rec in recommendations]:
-                        recommendations.append((item, confidence, lift, leverage, jaccard))
+                        recommendations.append((item, self.prices[int(item)], confidence, lift, leverage, jaccard))
                         if len(recommendations) >= max_recommendations:
                             break
 
         # Sort recommendations by confidence, lift, leverage, and Jaccard in descending order
-        recommendations.sort(key=lambda x: (x[1], x[2], x[3], x[4]), reverse=True)
+        recommendations.sort(key=lambda x: (x[1], x[2], x[3], x[4], x[5]), reverse=True)
         recommendations = [rec[0] for rec in recommendations[:max_recommendations]]
-
-        # Sort recommendations by item prices in descending order
-        recommendations.sort(key=lambda x: self.prices[int(x)], reverse=True)
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
