@@ -14,6 +14,7 @@ class Recommender:
         self.prices = []
         self.database = []
         self.rules = []
+        self.num_transacciones = []
 
     def eclat_recursive(self, P, minsup, F):
         for Xa, t_Xa in P.items():
@@ -64,9 +65,16 @@ class Recommender:
                     X = set(X)
                     Y = set(Z) - X
                     supX = next(sup for items, sup in fsets if set(items) == X)
+                    supY = next(sup for items, sup in fsets if set(items) == Y)
                     c = supZ / supX
                     if c >= minconf:
-                        R.append((sorted(list(X)), sorted(list(Y)), supZ, c))
+                        # Calculate lift
+                        lift = c / (supY / self.num_transactions)
+                        # Calculate leverage
+                        leverage = (supZ / self.num_transactions) - ((supX / self.num_transactions) * (supY / self.num_transactions))
+                        # Calculate Jaccard
+                        jaccard = (supZ / self.num_transactions) / ((supX / self.num_transactions) + (supY / self.num_transactions) - (supZ / self.num_transactions))
+                        R.append((sorted(list(X)), sorted(list(Y)), supZ, c, lift, leverage, jaccard))
                     else:
                         A = [a for a in A if not X.issubset(set(a))]
         return R
@@ -82,9 +90,10 @@ class Recommender:
 
         self.prices = prices
         self.database = database
+        self.num_transactions = len(database)
 
-        minsup = 19  # Example value for minimum support
-        minconf = 0.3  # Example value for minimum confidence
+        minsup = 20  # Example value for minimum support
+        minconf = 0.35  # Example value for minimum confidence
 
         # Find frequent itemsets
         frequent_itemsets = self.eclat(database, minsup)
@@ -100,13 +109,12 @@ class Recommender:
 
         return self
 
-    def get_recommendations(self, cart:list, max_recommendations:int) -> list:
+    def get_recommendations(self, cart: list, max_recommendations: int) -> list:
         """
-            makes a recommendation to a specific user
-            
-            :param cart: a list with the items in the cart
-            :param max_recommendations: maximum number of items that may be recommended
-            :return: list of at most `max_recommendations` items to be recommended
+        Makes a recommendation to a specific user.
+        :param cart: a list with the items in the cart
+        :param max_recommendations: maximum number of items that may be recommended
+        :return: list of at most `max_recommendations` items to be recommended
         """
         start_time = time.time()
         
@@ -114,17 +122,20 @@ class Recommender:
         cart_set = set(cart)
 
         # Find applicable rules
-        for premise, conclusion, support, confidence in self.rules:
+        for premise, conclusion, support, confidence, lift, leverage, jaccard in self.rules:
             if set(premise).issubset(cart_set):
                 for item in conclusion:
-                    if item not in cart_set and item not in recommendations:
-                        recommendations.append(item)
+                    if item not in cart_set and item not in [rec[0] for rec in recommendations]:
+                        recommendations.append((item, confidence, lift, leverage, jaccard))
                         if len(recommendations) >= max_recommendations:
                             break
 
+        # Sort recommendations by confidence, lift, leverage, and Jaccard in descending order
+        recommendations.sort(key=lambda x: (x[1], x[2], x[3], x[4]), reverse=True)
+        recommendations = [rec[0] for rec in recommendations[:max_recommendations]]
+
         # Sort recommendations by item prices in descending order
         recommendations.sort(key=lambda x: self.prices[int(x)], reverse=True)
-        recommendations = recommendations[:max_recommendations]
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
