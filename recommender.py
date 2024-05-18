@@ -131,7 +131,7 @@ class Recommender:
                             break
 
         # Sort recommendations by confidence, lift, leverage, and Jaccard in descending order
-        recommendations.sort(key=lambda x: (x[1], x[2], x[3], x[4], x[5]))
+        recommendations.sort(key=lambda x: (x[1], x[2], x[3], x[4], x[5]), reverse=True)
         recommendations = [rec[0] for rec in recommendations[:max_recommendations]]
 
         end_time = time.time()
