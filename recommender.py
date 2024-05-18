@@ -15,43 +15,36 @@ class Recommender:
         self.rules = []
         self.num_transacciones = 0
 
-    def eclat_recursive(self, P, minsup, F):
-        for Xa, t_Xa in P.items():
-            F.append((sorted(list(Xa)), len(t_Xa)))
-            Pa = {}
-            for Xb, t_Xb in P.items():
-                if list(Xb) > list(Xa):  # Ensure correct ordering for comparison
-                    Xab = Xa | Xb
-                    t_Xab = t_Xa & t_Xb
-                    if len(t_Xab) >= minsup:
-                        Pa[Xab] = t_Xab
-            if Pa:
-                self.eclat_recursive(Pa, minsup, F)
+    def eclat_recursive(self, prefix, items, frequent_itemsets, minsup):
+        while items:
+          item, item_indices = items.pop(0)
+          item_indices = set(item_indices)
+          new_prefix = prefix.union({item})
+          support = len(item_indices) / self.num_transacciones
+          if support >= minsup:
+              frequent_itemsets[new_prefix] = support
+              suffix = []
+              for other_item, other_indices in items:
+                  intersection = item_indices.intersection(other_indices)
+                  if len(intersection) / self.num_transacciones >= minsup:
+                      suffix.append((other_item, intersection))
+              self.eclat_recursive(new_prefix, suffix, frequent_itemsets, minsup)
 
     def eclat(self, db, minsup):
-        # Initialize the variables
-        F = []
-        P = defaultdict(set)
-
-        # Count item occurrences to filter out non-frequent items
-        item_counts = defaultdict(int)
-        for transaction in db:
+        # Create vertical data format
+        item_transactions = {}
+        for index, transaction in enumerate(db):
             for item in transaction:
-                item_counts[item] += 1
+                if item in item_transactions:
+                    item_transactions[item].append(index)
+                else:
+                    item_transactions[item] = [index]
 
-        # Only consider frequent items
-        for i, transaction in enumerate(db):
-            for item in transaction:
-                if item_counts[item] >= minsup:
-                    P[frozenset([item])].add(i)
-
-        # Start the recursive Eclat algorithm
-        start_time = time.time()
-        self.eclat_recursive(P, minsup, F)
-        end_time = time.time()
-
-        print(f"Eclat Runtime: {end_time - start_time} seconds")
-        return F
+        # Initialize recursive search
+        frequent_itemsets = {}
+        sorted_items = sorted(item_transactions.items(), key=lambda x: len(x[1]), reverse=True)
+        self.eclat_recursive(frozenset(), sorted_items, frequent_itemsets, minsup)
+        return frequent_itemsets, item_transactions
     
     def getStrongRulesFromFrequentSets(self, fsets, minconf):
         R = []
@@ -81,17 +74,14 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 19  # Example value for minimum support
-        minconf = 0.3  # Example value for minimum confidence
+        minsup = 0.01
+        minconf = 0.05
 
         # Find frequent itemsets
-        frequent_itemsets = self.eclat(database, minsup)
-
-        # Convert frequent itemsets to the required format for getStrongRulesFromFrequentSets
-        fsets = [(set(items), sup) for items, sup in frequent_itemsets]
+        frequent_itemsets, item_transactions = self.eclat(database, minsup)
 
         # Find strong rules
-        self.rules = self.getStrongRulesFromFrequentSets(fsets, minconf)
+        self.rules = self.getStrongRulesFromFrequentSets(item_transactions, frequent_itemsets, minconf)
 
         end_time = time.time()
         print(f"Training Runtime: {end_time - start_time} seconds")
