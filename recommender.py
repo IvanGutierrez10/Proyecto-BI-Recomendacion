@@ -63,15 +63,26 @@ class Recommender:
                 while A:
                     A1 = A.pop(0)
                     A2 = set(Z) - A1
-                    supA1 = [fs for fs in fsets if fs[0] == A1][0][1]
+                    # Find support for A1
+                    supA1_list = [fs for fs in fsets if fs[0] == A1]
+                    if not supA1_list:
+                        continue
+                    supA1 = supA1_list[0][1]
+                    if supA1 == 0:
+                        continue
                     conf = supZ / supA1
                     if conf >= minconf:
-                        supA2 = [fs for fs in fsets if fs[0] == A2][0][1]
+                        # Find support for A2
+                        supA2_list = [fs for fs in fsets if fs[0] == A2]
+                        if not supA2_list:
+                            continue
+                        supA2 = supA2_list[0][1]
                         lift = conf / (supA2 / len(self.num_transacciones))
                         leverage = supZ / len(self.num_transacciones) - (supA1 / len(self.num_transacciones)) * (supA2 / len(self.num_transacciones))
                         jaccard = supZ / (supA1 + supA2 - supZ)
                         R.append((A1, A2, supZ, conf, lift, leverage, jaccard))
         return R
+
     
     def train(self, prices, database):
         self.prices = prices
