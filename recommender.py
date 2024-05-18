@@ -65,7 +65,7 @@ class Recommender:
                     if conf >= minconf:
                         supA2 = [fs for fs in fsets if fs[0] == A2][0][1]
                         lift = conf / (supA2 / self.num_transacciones)
-                        leverage = supZ / self.num_transacciones - (supA1 / len(self.num_transacciones)) * (supA2 / self.num_transacciones)
+                        leverage = supZ / self.num_transacciones - (supA1 / self.num_transacciones) * (supA2 / self.num_transacciones)
                         jaccard = supZ / (supA1 + supA2 - supZ)
                         R.append((A1, A2, supZ, conf, lift, leverage, jaccard))
         return R
