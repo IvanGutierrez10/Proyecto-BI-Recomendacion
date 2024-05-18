@@ -80,8 +80,8 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 20  # Example value for minimum support
-        minconf = 0.25  # Example value for minimum confidence
+        minsup = 17  # Example value for minimum support
+        minconf = 0.3  # Example value for minimum confidence
 
         # Find frequent itemsets
         frequent_itemsets = self.eclat(database, minsup)
@@ -107,7 +107,7 @@ class Recommender:
         start_time = time.time()
 
         recommendations = []
-        print (cart)
+        print ("Carro de compras:", cart)
         cart_set = set(cart)
 
 
@@ -126,5 +126,5 @@ class Recommender:
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
-        print (recommendations)
+        print ("Recomendaciones:", recommendations)
         return recommendations
