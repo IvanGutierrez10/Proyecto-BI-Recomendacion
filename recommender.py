@@ -60,22 +60,12 @@ class Recommender:
                 while A:
                     A1 = A.pop(0)
                     A2 = set(Z) - A1
-                    # Find support for A1
-                    supA1_list = [fs for fs in fsets if fs[0] == A1]
-                    if not supA1_list:
-                        continue
-                    supA1 = supA1_list[0][1]
-                    if supA1 == 0:
-                        continue
+                    supA1 = [fs for fs in fsets if fs[0] == A1][0][1]
                     conf = supZ / supA1
                     if conf >= minconf:
-                        # Find support for A2
-                        supA2_list = [fs for fs in fsets if fs[0] == A2]
-                        if not supA2_list:
-                            continue
-                        supA2 = supA2_list[0][1]
-                        lift = conf / (supA2 / len(self.num_transacciones))
-                        leverage = supZ / len(self.num_transacciones) - (supA1 / len(self.num_transacciones)) * (supA2 / len(self.num_transacciones))
+                        supA2 = [fs for fs in fsets if fs[0] == A2][0][1]
+                        lift = conf / (supA2 / self.num_transacciones)
+                        leverage = supZ / self.num_transacciones - (supA1 / self.num_transacciones) * (supA2 / self.num_transacciones)
                         jaccard = supZ / (supA1 + supA2 - supZ)
                         R.append((A1, A2, supZ, conf, lift, leverage, jaccard))
         return R
@@ -117,7 +107,9 @@ class Recommender:
         start_time = time.time()
 
         recommendations = []
+        print (cart)
         cart_set = set(cart)
+
 
         # Find applicable rules
         for premise, conclusion, support, confidence, lift, leverage, jaccard in self.rules:
@@ -129,9 +121,10 @@ class Recommender:
                             break
 
         # Sort recommendations primarily by price and then by a combination of metrics in descending order
-        recommendations.sort(key=lambda x: (x[1], x[2]*0.4 + x[3]*0.3 + x[4]*0.2 + x[5]*0.1), reverse=True)
+        recommendations.sort(key=lambda x: (x[2]*0.1 + x[3]*0.5 + x[4]*0.4 + x[5]*0.3, x[1]), reverse=True)
         recommendations = [rec[0] for rec in recommendations[:max_recommendations]]
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
+        print (recommendations)
         return recommendations
