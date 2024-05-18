@@ -12,7 +12,7 @@ class Recommender:
         self.prices = []
         self.database = []
         self.rules = []
-        self.num_transacciones = []
+        self.num_transacciones = 0
 
     def compute_support(self, candidates, database):
         """
@@ -67,8 +67,8 @@ class Recommender:
                     conf = supZ / supA1
                     if conf >= minconf:
                         supA2 = [fs for fs in fsets if fs[0] == A2][0][1]
-                        lift = conf / (supA2 / self.num_transacciones)
-                        leverage = supZ / self.num_transacciones - (supA1 / self.num_transacciones) * (supA2 / self.num_transacciones)
+                        lift = conf / (supA2 / len(self.num_transacciones))
+                        leverage = supZ / len(self.num_transacciones) - (supA1 / len(self.num_transacciones)) * (supA2 / len(self.num_transacciones))
                         jaccard = supZ / (supA1 + supA2 - supZ)
                         R.append((A1, A2, supZ, conf, lift, leverage, jaccard))
         return R
@@ -80,7 +80,7 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 19  # Example value for minimum support
+        minsup = 0.02  # Example value for minimum support
         minconf = 0.3  # Example value for minimum confidence
 
         # Find frequent itemsets
