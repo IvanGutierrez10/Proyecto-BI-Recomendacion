@@ -80,8 +80,8 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 19  # Example value for minimum support
-        minconf = 0.3  # Example value for minimum confidence
+        minsup = 10  # Example value for minimum support
+        minconf = 0.2  # Example value for minimum confidence
 
         # Find frequent itemsets
         frequent_itemsets = self.eclat(database, minsup)
