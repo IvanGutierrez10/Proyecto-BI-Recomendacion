@@ -91,7 +91,7 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 0.02  # Example value for minimum support
+        minsup = 19  # Example value for minimum support
         minconf = 0.3  # Example value for minimum confidence
 
         # Find frequent itemsets
