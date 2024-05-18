@@ -80,8 +80,8 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 16  # Example value for minimum support
-        minconf = 0.30000000000000004  # Example value for minimum confidence
+        minsup = 19  # Example value for minimum support
+        minconf = 0.3  # Example value for minimum confidence
 
         # Find frequent itemsets
         frequent_itemsets = self.eclat(database, minsup)
@@ -121,7 +121,7 @@ class Recommender:
                             break
 
         # Sort recommendations primarily by price and then by a combination of metrics in descending order
-        recommendations.sort(key=lambda x: (x[2]*0.1 + x[3]*0.5 + x[4]*0.4 + x[5]*0.3, x[1]), reverse=True)
+        recommendations.sort(key=lambda x: (x[1], x[2]*0.1 + x[3]*0.5 + x[4]*0.4 + x[5]*0.3), reverse=True)
         recommendations = [rec[0] for rec in recommendations[:max_recommendations]]
 
         end_time = time.time()
