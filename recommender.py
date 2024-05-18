@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import itertools
 import time
@@ -79,18 +78,12 @@ class Recommender:
                         A = [a for a in A if not X.issubset(set(a))]
         return R
     
-    def train(self, prices, database) -> None:
-        """
-            allows the recommender to learn which items exist, which prices they have, and which items have been purchased together in the past
-            :param prices: a list of prices in USD for the items (the item ids are from 0 to the length of this list - 1)
-            :param database: a list of lists of item ids that have been purchased together. Every entry corresponds to one transaction
-            :return: the object should return itself here (this is actually important!)
-        """
-        start_time = time.time()
-
+    def train(self, prices, database):
         self.prices = prices
         self.database = database
-        self.num_transactions = len(database)
+        self.num_transacciones = len(database)
+
+        start_time = time.time()
 
         minsup = 19  # Example value for minimum support
         minconf = 0.3  # Example value for minimum confidence
