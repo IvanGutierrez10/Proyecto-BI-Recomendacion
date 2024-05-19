@@ -101,8 +101,8 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 0.0025
-        minconf = 0.04
+        minsup = 0.0029
+        minconf = 0.039
 
         # Find frequent itemsets
         frequent_itemsets, item_transactions = self.eclat(database, minsup)
