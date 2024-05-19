@@ -96,13 +96,13 @@ class Recommender:
         self.prices = prices
         self.database = database
         self.num_transacciones = len(database)
-        print(prices)
-        print(database)
+        #print(prices)
+        #print(database)
 
         start_time = time.time()
 
-        minsup = 0.004
-        minconf = 0.1
+        minsup = 0.003
+        minconf = 0.05
 
         # Find frequent itemsets
         frequent_itemsets, item_transactions = self.eclat(database, minsup)
