@@ -96,6 +96,10 @@ class Recommender:
         self.prices = prices
         self.database = database
         self.num_transacciones = len(database)
+        #print(prices)
+        #print(database)
+
+        start_time = time.time()
 
         minsup = 0.003
         minconf = 0.04
@@ -106,6 +110,8 @@ class Recommender:
         # Find strong rules
         self.rules = self.getStrongRulesFromFrequentSets(item_transactions, frequent_itemsets, minconf)
 
+        end_time = time.time()
+        print(f"Training Runtime: {end_time - start_time} seconds")
 
         return self
 
@@ -116,6 +122,8 @@ class Recommender:
         :param max_recommendations: maximum number of items that may be recommended
         :return: list of at most `max_recommendations` items to be recommended
         """
+        start_time = time.time()
+        print ("Carro de compras: ", cart)
 
         recommendations = {}
 
@@ -126,7 +134,7 @@ class Recommender:
                     consequents = rule['consequent']
                     for consequent in consequents:
                         if consequent not in cart:
-                            composite_score = (rule['confidence']*0.5 + rule['lift']*0.25 + rule['leverage']*0.15 + rule['jaccard']*0.1)
+                            composite_score = (rule['confidence'] + rule['lift'] + rule['leverage'] + rule['jaccard']) / 4
                             if consequent not in recommendations:
                                 recommendations[consequent] = composite_score
                             else:
@@ -136,4 +144,7 @@ class Recommender:
         sorted_recommendations = sorted(recommendation_list, key=lambda x: (-x[2], -x[1]))
         recommendations = [item for item, _, _ in sorted_recommendations[:max_recommendations]]
 
+        end_time = time.time()
+        print(f"Recommendation Runtime: {end_time - start_time} seconds")
+        print ("Recomendaciones:", recommendations)
         return recommendations
