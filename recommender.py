@@ -123,7 +123,7 @@ class Recommender:
         :return: list of at most `max_recommendations` items to be recommended
         """
         start_time = time.time()
-        print ("Carro de compras: " +cart)
+        print ("Carro de compras: ", cart)
 
         recommendations = {}
 
