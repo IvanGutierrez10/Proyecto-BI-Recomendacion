@@ -101,7 +101,7 @@ class Recommender:
 
         start_time = time.time()
 
-        minsup = 0.006
+        minsup = 0.004
         minconf = 0.1
 
         # Find frequent itemsets
