@@ -96,12 +96,8 @@ class Recommender:
         self.prices = prices
         self.database = database
         self.num_transacciones = len(database)
-        #print(prices)
-        #print(database)
 
-        #start_time = time.time()
-
-        minsup = 0.003
+        minsup = 0.002
         minconf = 0.04
 
         # Find frequent itemsets
@@ -110,8 +106,6 @@ class Recommender:
         # Find strong rules
         self.rules = self.getStrongRulesFromFrequentSets(item_transactions, frequent_itemsets, minconf)
 
-        #end_time = time.time()
-        #print(f"Training Runtime: {end_time - start_time} seconds")
 
         return self
 
@@ -122,8 +116,6 @@ class Recommender:
         :param max_recommendations: maximum number of items that may be recommended
         :return: list of at most `max_recommendations` items to be recommended
         """
-        #start_time = time.time()
-        #print ("Carro de compras: ", cart)
 
         recommendations = {}
 
@@ -144,7 +136,4 @@ class Recommender:
         sorted_recommendations = sorted(recommendation_list, key=lambda x: (-x[2], -x[1]))
         recommendations = [item for item, _, _ in sorted_recommendations[:max_recommendations]]
 
-        #end_time = time.time()
-        #print(f"Recommendation Runtime: {end_time - start_time} seconds")
-        #print ("Recomendaciones:", recommendations)
         return recommendations
