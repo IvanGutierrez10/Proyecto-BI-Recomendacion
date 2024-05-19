@@ -126,7 +126,7 @@ class Recommender:
                     consequents = rule['consequent']
                     for consequent in consequents:
                         if consequent not in cart:
-                            composite_score = (rule['confidence']*0.6 + rule['lift']*0.5 + rule['leverage']*0.35 + rule['jaccard']*0.2)
+                            composite_score = (rule['confidence']*0.8 + rule['lift']*0.7 + rule['leverage']*0.4 + rule['jaccard']*0.35)
                             if consequent not in recommendations:
                                 recommendations[consequent] = composite_score
                             else:
