@@ -97,7 +97,7 @@ class Recommender:
         self.database = database
         self.num_transacciones = len(database)
 
-        minsup = 0.002
+        minsup = 0.003
         minconf = 0.04
 
         # Find frequent itemsets
@@ -126,7 +126,7 @@ class Recommender:
                     consequents = rule['consequent']
                     for consequent in consequents:
                         if consequent not in cart:
-                            composite_score = (rule['confidence'] + rule['lift'] + rule['leverage'] + rule['jaccard']) / 4
+                            composite_score = (rule['confidence']*0.4 + rule['lift']*0.3 + rule['leverage']*0.2 + rule['jaccard']*0.1) / 4
                             if consequent not in recommendations:
                                 recommendations[consequent] = composite_score
                             else:
