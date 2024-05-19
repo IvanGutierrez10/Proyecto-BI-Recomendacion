@@ -140,7 +140,7 @@ class Recommender:
                                 recommendations[consequent] = max(recommendations[consequent], composite_score)
 
         recommendation_list = [(item, score, self.prices[item]) for item, score in recommendations.items()]
-        sorted_recommendations = sorted(recommendation_list, key=lambda x: (-x[1], -x[2]))
+        sorted_recommendations = sorted(recommendation_list, key=lambda x: (-x[2], -x[1]))
         recommendations = [item for item, _, _ in sorted_recommendations[:max_recommendations]]
 
         end_time = time.time()
