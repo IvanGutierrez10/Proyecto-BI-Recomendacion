@@ -46,23 +46,53 @@ class Recommender:
         self.eclat_recursive(frozenset(), sorted_items, frequent_itemsets, minsup)
         return frequent_itemsets, item_transactions
     
-    def getStrongRulesFromFrequentSets(self, fsets, minconf):
-        R = []
-        for Z, supZ in fsets:
-            if len(Z) >= 2:
-                A = [set(x) for x in itertools.chain(*[itertools.combinations(Z, i) for i in range(1, len(Z))])]
-                while A:
-                    A1 = A.pop(0)
-                    A2 = set(Z) - A1
-                    supA1 = [fs for fs in fsets if fs[0] == A1][0][1]
-                    conf = supZ / supA1
-                    if conf >= minconf:
-                        supA2 = [fs for fs in fsets if fs[0] == A2][0][1]
-                        lift = conf / (supA2 / self.num_transacciones)
-                        leverage = supZ / self.num_transacciones - (supA1 / self.num_transacciones) * (supA2 / self.num_transacciones)
-                        jaccard = supZ / (supA1 + supA2 - supZ)
-                        R.append((A1, A2, supZ, conf, lift, leverage, jaccard))
-        return R
+    def getStrongRulesFromFrequentSets(self, item_transactions, frequent_itemsets, minconf):
+        rules = []
+
+        for itemset, itemset_support in frequent_itemsets.items():
+          if len(itemset) > 1:
+            for consequent in itemset:
+              antecedent = itemset - frozenset([consequent])
+              antecedent_support = frequent_itemsets.get(antecedent, 0)
+              consequent_support = frequent_itemsets.get(frozenset([consequent]), 0)
+
+              # Calculate Confidence
+              if antecedent_support != 0:
+                  confidence = itemset_support / antecedent_support
+              else:
+                  confidence = 0
+
+              # Calculate Lift
+              if consequent_support != 0:
+                  lift = confidence / consequent_support
+              else:
+                  lift = 0
+
+              # Calculate Leverage
+              leverage = itemset_support - (antecedent_support * consequent_support)
+
+              # Calculate Jaccard
+              antecedent_transactions = item_transactions[list(antecedent)[0]]
+              consequent_transactions = item_transactions[consequent]
+              intersection_size = len(set(antecedent_transactions) & set(consequent_transactions))
+              union_size = len(set(antecedent_transactions) | set(consequent_transactions))
+              jaccard = intersection_size / union_size if union_size != 0 else 0
+
+              if confidence >= minconf:
+                  rules.append({
+                      'antecedent': antecedent,
+                      'consequent': frozenset([consequent]),
+                      'confidence': confidence,
+                      'lift': lift,
+                      'leverage': leverage,
+                      'jaccard': jaccard
+                  })
+
+        return rules
+    
+    def powerset(self, iterable):
+        s = list(iterable)
+        return chain.from_iterable(combinations(s, r) for r in range(1, len(s)+1))
 
     
     def train(self, prices, database):
@@ -97,25 +127,26 @@ class Recommender:
         """
         start_time = time.time()
 
-        recommendations = []
-        print ("Carro de compras:", cart)
-        cart_set = set(cart)
+        recommendations = {}
 
+        for item_set in self.powerset(cart):
+            item_set = frozenset(item_set)
+            for rule in self.rules:
+                if item_set == rule['antecedent']:
+                    consequents = rule['consequent']
+                    for consequent in consequents:
+                        if consequent not in cart:
+                            composite_score = (rule['confidence'] + rule['lift'] + rule['leverage'] + rule['jaccard']) / 4
+                            if consequent not in recommendations:
+                                recommendations[consequent] = composite_score
+                            else:
+                                recommendations[consequent] = max(recommendations[consequent], composite_score)
 
-        # Find applicable rules
-        for premise, conclusion, support, confidence, lift, leverage, jaccard in self.rules:
-            if set(premise).issubset(cart_set):
-                for item in conclusion:
-                    if item not in cart_set and item not in [rec[0] for rec in recommendations]:
-                        recommendations.append((item, self.prices[int(item)], confidence, lift, leverage, jaccard))
-                        if len(recommendations) >= max_recommendations:
-                            break
-
-        # Sort recommendations primarily by price and then by a combination of metrics in descending order
-        recommendations.sort(key=lambda x: (x[1], x[2]*0.1 + x[3]*0.5 + x[4]*0.4 + x[5]*0.3), reverse=True)
-        recommendations = [rec[0] for rec in recommendations[:max_recommendations]]
+        recommendation_list = [(item, score, self.prices[item]) for item, score in recommendations.items()]
+        sorted_recommendations = sorted(recommendation_list, key=lambda x: (-x[1], -x[2]))
+        recommendations = [item for item, _, _ in sorted_recommendations[:max_recommendations]]
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
-        print ("Recomendaciones:", recommendations)
+        print (recommendations)
         return recommendations
