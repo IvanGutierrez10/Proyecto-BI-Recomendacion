@@ -102,7 +102,7 @@ class Recommender:
         start_time = time.time()
 
         minsup = 0.01
-        minconf = 0.05
+        minconf = 0.1
 
         # Find frequent itemsets
         frequent_itemsets, item_transactions = self.eclat(database, minsup)
@@ -123,6 +123,7 @@ class Recommender:
         :return: list of at most `max_recommendations` items to be recommended
         """
         start_time = time.time()
+        print ("Carro de compras: " +cart)
 
         recommendations = {}
 
