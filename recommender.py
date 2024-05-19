@@ -145,5 +145,5 @@ class Recommender:
 
         end_time = time.time()
         print(f"Recommendation Runtime: {end_time - start_time} seconds")
-        print (recommendations)
+        print ("Recomendaciones:", recommendations)
         return recommendations
