@@ -1,8 +1,5 @@
 from itertools import chain, combinations
 import time
-from collections import defaultdict
-import itertools
-
 
 class Recommender:
     """
